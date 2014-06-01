@@ -1,0 +1,48 @@
+
+% Fonction g qui clacul le chemin entre X1,Y1 et X2,Y2 avec X2,Y2 = le point précédent + distance entre les deux points.
+
+g([], [], 0, 0).
+g([X1,Y1], [X1,Y1], A, A).
+g([X1,Y1], [X2,Y2], 0, Z):- distance([X1,Y1], [X2,Y2],Z).
+g([X1,Y1], [X2,Y2], A, Z):- distance([X1,Y1], [X2,Y2],B), Z is A+B.
+
+% distance calcul la distance euclidienne entre deux points (en coordonnées x,y).
+
+distance([],[],0).
+distance([A,B],[], C):- C is sqrt((A * A) + (B * B)).
+distance([],[A,B],C):- C is sqrt((A * A) + (B * B)).
+distance([A,B],[A,B],0).
+distance([A1,B1],[A2,B2],C):- C is sqrt(((A2 - A1) * (A2 - A1)) + ((B2 - B1) * (B2 - B1))).
+
+% Fonction f qui calcul le cout courant du chemin + la distance euclidienne restante
+% couple1 : point précédant à N-1, couple2 : point courant exploré N, couple3 : point final, A : distance parcouru lors de la solution N-1, R : cout total
+
+f([],[],[],0,0).
+f([X1,Y1], [X1,Y1], [X2,Y2], A, A).
+f([X1,Y1], [X2,Y2], [X3,Y3], A, R):- g([X1,Y1],[X2,Y2],A, B), distance([X2,Y2], [X3,Y3], C), R is B+C.
+
+% Permet de parourir la liste et d'afficher les coordoonnées X,Y
+
+parcour_liste([X,Y|R], [X,Y]).
+parcour_liste([X1,Y1|R], [X2,Y2]):- parcour_liste(R, [X2,Y2]).
+
+% On test la position du robot. True : Il est sur l'objectif; False : il ne l'est pas
+
+robot_sur_objectif([X1,Y1], [X2,Y2]):- X1 =:= X2, Y1 =:= Y2.
+
+% Permet d'afficher le contenue de Closed
+
+affiche_solution(Closed, A):- parcour_liste(Closed, A).
+
+% On regarde si le robot est sur l'objectif. True : On affidche le contenue de Closed; False : On continue de chercher le meilleur noeud fils
+
+si_robot_sur_objectif([X1,Y1], [X3,Y3], Open, Closed, Cout, A):- robot_sur_objectif([X1,Y1],[X3,Y3]), !, affiche_solution(Closed, A).
+si_robot_sur_objectif([X1,Y1], [X3,Y3], Open, Closed, Cout, A):- meilleur_successeur([X1,Y1], [X2,Y2], [X3,Y3], Cout, Closed, Open, Resultat).
+
+% Prédicat qui cherche le meilleur neoud fils à visiter.
+% A Compléter !!!
+
+meilleur_successeur([X1,Y1], [X2,Y2], [X3,Y3], Cout, Closed, Open, Resultat):- not(parcourir_liste(Closed, [X2,Y2])), not(parcourir_liste(Open, [X2,Y2])), f([X1,Y1], [X2,Y2], [X3,Y3], Cout, Resultat).
+meilleur_successeur([X1,Y1], [X2,Y2], [X3,Y3], Cout, Closed, Open, Resultat):- g([X1,Y1], [X2,Y2], Cout, A), distance([X1,Y1],[X2,Y2],B), A > Cout + B, f([X1,Y1], [X2,Y2], [X3,Y3], Cout, Resultat).
+
+% Pour insérer les coordonnées dans Closed : Utiliser append([X,Y], Closed, Resultat).
