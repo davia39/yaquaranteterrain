@@ -1,4 +1,5 @@
 
+% g est une valeur qui s incremente : g2 = g1 + cout de g1 à g2.
 % Fonction g qui clacul le chemin entre X1,Y1 et X2,Y2 avec X2,Y2 = le point précédent + distance entre les deux points.
 
 g([], [], 0, 0).
@@ -30,19 +31,77 @@ parcour_liste([X1,Y1|R], [X2,Y2]):- parcour_liste(R, [X2,Y2]).
 
 robot_sur_objectif([X1,Y1], [X2,Y2]):- X1 =:= X2, Y1 =:= Y2.
 
-% Permet d'afficher le contenue de Closed
+% Permet d'afficher le contenue de ClosedList
 
-affiche_solution(Closed, A):- parcour_liste(Closed, A).
+affiche_solution(ClosedList, A):- parcour_liste(ClosedList, A).
 
-% On regarde si le robot est sur l'objectif. True : On affidche le contenue de Closed; False : On continue de chercher le meilleur noeud fils
+% On regarde si le robot est sur l'objectif. True : On affidche le contenue de ClosedList; False : On continue de chercher le meilleur noeud fils
 
-si_robot_sur_objectif([X1,Y1], [X3,Y3], Open, Closed, Cout, A):- robot_sur_objectif([X1,Y1],[X3,Y3]), !, affiche_solution(Closed, A).
-si_robot_sur_objectif([X1,Y1], [X3,Y3], Open, Closed, Cout, A):- meilleur_successeur([X1,Y1], [X2,Y2], [X3,Y3], Cout, Closed, Open, Resultat).
+si_robot_sur_objectif([X1,Y1], [X3,Y3], OpenList, ClosedList, Cout, A):- robot_sur_objectif([X1,Y1],[X3,Y3]), !, affiche_solution(Closed, A).
+si_robot_sur_objectif([X1,Y1], [X3,Y3], OpenList, ClosedList, Cout, A):- meilleur_successeur([X1,Y1], [X2,Y2], [X3,Y3], Cout, Closed, OpenList, Resultat).
 
 % Prédicat qui cherche le meilleur neoud fils à visiter.
 % A Compléter !!!
 
-meilleur_successeur([X1,Y1], [X2,Y2], [X3,Y3], Cout, Closed, Open, Resultat):- not(parcourir_liste(Closed, [X2,Y2])), not(parcourir_liste(Open, [X2,Y2])), f([X1,Y1], [X2,Y2], [X3,Y3], Cout, Resultat).
-meilleur_successeur([X1,Y1], [X2,Y2], [X3,Y3], Cout, Closed, Open, Resultat):- g([X1,Y1], [X2,Y2], Cout, A), distance([X1,Y1],[X2,Y2],B), A > Cout + B, f([X1,Y1], [X2,Y2], [X3,Y3], Cout, Resultat).
+meilleur_successeur([X1,Y1], [X2,Y2], [X3,Y3], Cout, ClosedList, OpenList, Resultat):- not(parcourir_liste(Closed, [X2,Y2])), not(parcourir_liste(OpenList, [X2,Y2])), f([X1,Y1], [X2,Y2], [X3,Y3], Cout, Resultat).
+meilleur_successeur([X1,Y1], [X2,Y2], [X3,Y3], Cout, ClosedList, OpenList, Resultat):- g([X1,Y1], [X2,Y2], Cout, A), distance([X1,Y1],[X2,Y2],B), A > Cout + B, f([X1,Y1], [X2,Y2], [X3,Y3], Cout, Resultat).
 
-% Pour insérer les coordonnées dans Closed : Utiliser append([X,Y], Closed, Resultat).
+% Pour insérer les coordonnées dans ClosedList : Utiliser append([X,Y], ClosedList, Resultat).
+
+% Recupere les coordonnées du robot lorsqu'il se déplace
+
+init(OpelList, [], ClosedList, []):- setval(OpenList, []), setval(ClosedList, []).
+
+a_star( InitialState, FinalState, Path):- setval(OpenList, InitialState), a_star(FinalState, Path).
+a_star(FinalState, Path).
+
+
+ delete(A, [A|B], B).
+ delete(A, [B, C|D], [B|E]) :- delete(A, [C|D], E).
+
+
+%  openlist(noeud).
+%  noeud(numero_noeud, noeud_parent, pos_courante, cout).
+
+ 
+% Retourne (sans supprimer) le noeud de open avec le plus petit cout f
+
+getBestNodeFromOpenList(openlist):- nth0(0, open_list, noeud).
+
+% Meme chose mais le supprime de open
+
+extractBestNodeFromOpenList(noeud):- nb_getval(OpenList,(noeud[R])), delete(noeud, OpenList, OpenList).
+
+% Retourne le chemin à suivre dans la forme donnée par le sujet
+% Le noeud fin
+buildPath(State, Path).
+
+% insert tous les noeuds de AccessibleStateList dans open
+
+insertAllStateInOpenList(noeud, FinalState, AccessibleStateList).
+
+% Donne la valeur de l'heuristique, ici Manhattan
+
+getHeuristicValue(State, FinalState, V).
+
+% Retourne tous les états accessibles depuis l'état actuel "State" (je pense qu on doit traiter ceux dans open et closed mais je ne sais pas comment)
+
+getAllAccessibleStates(State, AccessibleStatesList).
+
+move( [TL, TR, BL, BR, _, BX, BY | _],[]) :- deplacement(BX, BY, 1, NX, NY, TL, TR, BL, BR, N).
+
+deplacement(X,Y,1,X,Y,N, TL, TR, BL, BR, N) :- obstacle(X,Y, TL, TR, BL, BR,0), writef('deplacement : %t\n',[N]),!.
+deplacement(X,Y,3,X,Y,N, TL, TR, BL, BR, N) :- obstacle(X,Y, TL, TR, BL, BR,0), writef('deplacement : %t\n',[N]),!.
+deplacement(X,Y,2,X,Y,N, TL, TR, BL, BR, N) :- obstacle(X,Y, TL, TR, BL, BR,1), writef('deplacement : %t\n',[N]),!.
+deplacement(X,Y,4,X,Y,N, TL, TR, BL, BR, N) :- obstacle(X,Y, TL, TR, BL, BR,1), writef('deplacement : %t\n',[N]),!.
+
+deplacement(X,Y,1,NX,NY,N, TL, TR, BL, BR,NBR) :- N1 is N+1, X1 is X+1, deplacement(X1,Y,1, NX,NY, N1, TL, TR, BL, BR,NBR).
+deplacement(X,Y,3,NX,NY,N, TL, TR, BL, BR,NBR) :- N1 is N+1, X1 is X-1, deplacement(X1,Y,3, NX,NY, N1, TL, TR, BL, BR,NBR).
+deplacement(X,Y,2,NX,NY,N, TL, TR, BL, BR,NBR) :- N1 is N+1, Y1 is Y+1, deplacement(X,Y1,2, NX,NY, N1, TL, TR, BL, BR,NBR).
+deplacement(X,Y,4,NX,NY,N, TL, TR, BL, BR,NBR) :- N1 is N+1, Y1 is Y-1, deplacement(X,Y1,4, NX,NY, N1, TL, TR, BL, BR,NBR).
+
+deplacement(X,Y, D, NX, NY, TL, TR, BL, BR,NBR) :- deplacement(X,Y, D,NX, NY,0, TL, TR, BL, BR,NBR).
+
+% On lance au démarrage du tour, on détermine les choix possibles
+
+lancement([X1,Y1], [X3,Y3], ClosedList, OpenList, Robot, Cout, TL, TR, BL, BR):- deplacement(X1, Y1, _, BX, BY, _, TL, TR, BL, BR, 0), f([X1,Y1], [BX,BY], [X3,Y3], 0, Cout), append(ClosedList, [X1,Y1], Closed2), append(OpenList, [X2,Y2], Open2), astar([X1,Y1], [X2,Y2], [X3,Y3], Open2, Closed2, Cout, Robot).
