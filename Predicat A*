@@ -1,4 +1,35 @@
 
+
+blocked([X,Y],h):-Y1 is Y-1, nb_getval(r1,[X,Y1]),!.
+blocked([X,Y],h):-Y1 is Y-1, nb_getval(r2,[X,Y1]),!.
+blocked([X,Y],h):-Y1 is Y-1, nb_getval(r3,[X,Y1]),!.
+
+blocked([X,Y],b):-Y1 is Y+1, nb_getval(r1,[X,Y1]),!.
+blocked([X,Y],b):-Y1 is Y+1, nb_getval(r2,[X,Y1]),!.
+blocked([X,Y],b):-Y1 is Y+1, nb_getval(r3,[X,Y1]),!.
+
+blocked([X,Y],l):-X1 is X-1, nb_getval(r1,[X1,Y]),!.
+blocked([X,Y],l):-X1 is X-1, nb_getval(r2,[X1,Y]),!.
+blocked([X,Y],l):-X1 is X-1, nb_getval(r3,[X1,Y]),!.
+
+blocked([X,Y],r):-X1 is X+1, nb_getval(r1,[X1,Y]),!.
+blocked([X,Y],r):-X1 is X+1, nb_getval(r2,[X1,Y]),!.
+blocked([X,Y],r):-X1 is X+1, nb_getval(r3,[X1,Y]),!.
+
+blocked(Pos,Dir):-nb_getval(lWall,LWall),blocked(Pos,Dir,LWall).
+
+blocked(Pos,h,[_,[Pos|_]]):-!.
+blocked(Pos,h,[A,[_|R]]):-blocked(Pos,h,[A,R]),!.
+
+blocked([X,Y],b,[_,[[X,Y1]|_]]):-Y1 is Y+1,!.
+blocked(Pos,b,[A,[_|R]]):-blocked(Pos,b,[A,R]),!.
+
+blocked(Pos,l,[[Pos|_],_]):-!.
+blocked(Pos,l,[[_|R],A]):-blocked(Pos,l,[R,A]),!.
+
+blocked([X,Y],r,[[[X1,Y]|_],_]):- X1 is X+1,!.
+blocked(Pos,r,[[_|R],A]):-blocked(Pos,r,[R,A]),!.
+
 % g est une valeur qui s incremente : g2 = g1 + cout de g1 à g2.
 % Fonction g qui clacul le chemin entre X1,Y1 et X2,Y2 avec X2,Y2 = le point précédent + distance entre les deux points.
 
@@ -63,11 +94,6 @@ a_star(State2, Path):-
 	getAllAccessibleStates(Noeud, StatesList), 
 	insertAllStatesInOpenList(Noeud, State2, SatesList),
 	a_star(State2, Path).
-
-	
-%  openlist(noeud).
-%  noeud(numero_noeud, noeud_parent, pos_courante, cout).
-
  
 % Retourne (sans supprimer) le noeud de open avec le plus petit cout f
 
@@ -81,8 +107,22 @@ extractBestNodeFromOpenList(noeud):- nb_getval(OpenList,[noeud|R]), nb_setval(Op
 
 % Retourne le chemin à suivre dans la forme donnée par le sujet
 % Le noeud fin
-buildPath(State, Path).
+buildPath(Path):-
+	getBestNodeFromList([Position,_,_P]),
+	buildPath(Position,P,MouvInv),
+	inverse(MouvInv, Mouv),
+	nb_getval(color,C),
+	listeFinale(Mouv,C,Path).
 
+buildPath(_,-1,[]).	
+buildPath(Position,P1,Path):-
+	direction(Position,P1,D),
+	append([D],Temp,Path),
+	nb_getval(closedList,Closed),
+	member([P1,_,_,P2],Closed),
+	buildPath(P1,P2,Temp).
+	
+	
 % insert tous les noeuds de AccessibleStateList dans open
 
 insertAllStateInOpenList(noeud, FinalState, AccessibleStateList).
@@ -123,12 +163,23 @@ checkRes([A|R],[_|RO],Closed,Res):-
 			
 insertAllStatesInOpenList(_,_,[]).
 insertAllStatesInOpenList([PositionPere,N,_,_],[PositionBalise,_,0,_],[PositionRobot|R]):-
-		distance(PositionRobot,PositionBalise,D), 
-		N1 is N+1, 
+		distance(PositionRobot,PositionBalise,H), 
+		G1 is G+1, 
 		nb_getval(OpenList,OpenList2), 		
-		insertTri([PosisionRobot,N1,D,PositionPere],OpenList2,OpenList3),
+		insererAvecTri([PosisionRobot, G1, H, PositionPere],OpenList2,OpenList3),
 		nb_setval(OpenList,OpenList3),
-		insertAllStatesInOpenList([PositionPere,N,_,_],[PositionBalise,_,0,_],R).
+		insertAllStatesInOpenList([PositionPere,G,_,_],[PositionBalise,_,0,_],R).
+
+insererAvecTri([], A, A).
+insererAvecTri(A,[],[A]):-!. 
+insererAvecTri([[X1,Y1],G1,H1,P1],[[[X2,Y2],G2,H2,P2]|L],[[[X1,Y1],G1,H1,P1],[[X2,Y2],G2,H2,P2]|L]):- H1+G1 =< H2+G2, !. 
+insererAvecTri([[X1,Y1],G1,H1,P1],[[[X2,Y2],G2,H2,P2]|L],[[[X2,Y2],G2,H2,P2]|L1]):- G1+H1>G2+H2, insererAvecTri([[X1,Y1],G1,H1,P1],L,L1), !. 
+
+
+	
+%  OpenList(noeud).
+%  Noeud(pos_courante, G, H, pos_pere).
+
 
 
 move( [TL, TR, BL, BR, _, BX, BY | _],[]) :- deplacement(BX, BY, 1, NX, NY, TL, TR, BL, BR, N).
