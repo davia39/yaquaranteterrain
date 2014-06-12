@@ -50,27 +50,34 @@ meilleur_successeur([X1,Y1], [X2,Y2], [X3,Y3], Cout, ClosedList, OpenList, Resul
 
 % Recupere les coordonnées du robot lorsqu'il se déplace
 
-init(OpelList, [], ClosedList, []):- setval(OpenList, []), setval(ClosedList, []).
+init(_):- nb_setval(OpenList, []), nb_setval(ClosedList, []), nb_setval(Path1, []) .
 
-a_star( InitialState, FinalState, Path):- setval(OpenList, InitialState), a_star(FinalState, Path).
-a_star(FinalState, Path).
+a_star([PositionBalise, 0, 0, -1], [PositionBalise,_, 0,_], []).
+a_star(State1, State2, Path):-nb_getval(OpenList, []),!, nb_setval(OpenList, [State1]), a_star(State2, Path).
 
+a_star(_,_):- nb_getval(OpenList, []), !, fail.
+a_star([PosotionBalise, _, 0, _], Path):- getBestNodeFromOpenList([PositionBalise,_,0,_]), !, buildPath(Path).
+a_star(State2, Path):- 
+	extractBestNodeFromOpenList(Noeud),
+	completerClosed(Noeud), 
+	getAllAccessibleStates(Noeud, StatesList), 
+	insertAllStatesInOpenList(Noeud, State2, SatesList),
+	a_star(State2, Path).
 
- delete(A, [A|B], B).
- delete(A, [B, C|D], [B|E]) :- delete(A, [C|D], E).
-
-
+	
 %  openlist(noeud).
 %  noeud(numero_noeud, noeud_parent, pos_courante, cout).
 
  
 % Retourne (sans supprimer) le noeud de open avec le plus petit cout f
 
-getBestNodeFromOpenList(openlist):- nth0(0, open_list, noeud).
+getBestNodeFromOpenList(Noeud):- nb_getval(OpenList, [Noeud|_]).
+
+completerClosed(Noeud):- nb_getval(ClosedList, ValeurClosed), append([Noeud], ValeurClosed, ClosedList2),nb_setval(ClosedList, ClosedList2).
 
 % Meme chose mais le supprime de open
 
-extractBestNodeFromOpenList(noeud):- nb_getval(OpenList,(noeud[R])), delete(noeud, OpenList, OpenList).
+extractBestNodeFromOpenList(noeud):- nb_getval(OpenList,[noeud|R]), nb_setval(OpenList, R).
 
 % Retourne le chemin à suivre dans la forme donnée par le sujet
 % Le noeud fin
@@ -86,7 +93,43 @@ getHeuristicValue(State, FinalState, V).
 
 % Retourne tous les états accessibles depuis l'état actuel "State" (je pense qu on doit traiter ceux dans open et closed mais je ne sais pas comment)
 
-getAllAccessibleStates(State, AccessibleStatesList).
+getAllAccessibleStates([X,Y,_,_,_], AccessibleStatesList):-
+	deplacement([X,Y,1,_,_,_,_,TL,TR,BL,BR,_]),
+	deplacement([X,Y,2,_,_,_,_,TL,TR,BL,BR,_]),
+	deplacement([X,Y,3,_,_,_,_,TL,TR,BL,BR,_]),
+	deplacement([X,Y,4,_,_,_,_,TL,TR,BL,BR,_]),
+	checkRes([ResH,ResB,ResL,ResR],AccessibleStatesList).
+			
+checkRes(LRes,AccessibleStatesList):-
+		nb_getval(openList,Open),
+		nb_getval(closedList,Closed),
+		checkRes(LRes,Open,Closed,AccessibleStatesList).
+			
+checkRes([],_,_,[]):-!.
+checkRes([A|R],[],[],Res):-append([A],Res1,Res),
+			nb_getval(openList,Open),nb_getval(closedList,Closed),
+			checkRes(R,Open,Closed,Res1),!.
+checkRes([A|R],[],[[A,_,_,_]|_],Res):-
+			nb_getval(closedList,Closed),
+			nb_getval(openList,Open),
+			checkRes(R,Open,Closed,Res),!.
+checkRes([A|R],[],[_|RC],Res):-
+			checkRes([A|R],[],RC,Res),!.
+checkRes([A|R],[[A,_,_,_]|_],Closed,Res):-
+			nb_getval(openList,Open),
+			checkRes(R,Open,Closed,Res).
+checkRes([A|R],[_|RO],Closed,Res):-
+			checkRes([A|R],RO,Closed,Res).
+			
+insertAllStatesInOpenList(_,_,[]).
+insertAllStatesInOpenList([PositionPere,N,_,_],[PositionBalise,_,0,_],[PositionRobot|R]):-
+		distance(PositionRobot,PositionBalise,D), 
+		N1 is N+1, 
+		nb_getval(OpenList,OpenList2), 		
+		insertTri([PosisionRobot,N1,D,PositionPere],OpenList2,OpenList3),
+		nb_setval(OpenList,OpenList3),
+		insertAllStatesInOpenList([PositionPere,N,_,_],[PositionBalise,_,0,_],R).
+
 
 move( [TL, TR, BL, BR, _, BX, BY | _],[]) :- deplacement(BX, BY, 1, NX, NY, TL, TR, BL, BR, N).
 
