@@ -39,37 +39,28 @@ move( _, [] ) :- !.
 %        ^
 %        |
 %        Action: next configuration 
-move( [_, _, _, _, T, BX, BY, GX, GY, YX, YY, RX, RY | _],[]):- T>=1, T < 5,  nb_setval(robotsPos,[ [GX, GY],[YX, YY],[RX, RY]]).
-move( [_, _, _, _, T, BX, BY, GX, GY, YX, YY, RX, RY | _],[]):- T>=5, T < 9, nb_setval(robotsPos,[[BX, BY],[YX, YY],[RX, RY]]).
-move( [_, _, _, _, T, BX, BY, GX, GY, YX, YY, RX, RY | _],[]):- T>=9, T < 13, nb_setval(robotsPos,[[BX, BY],[GX, GY],[RX, RY]]).
-move( [_, _, _, _, T, BX, BY, GX, GY, YX, YY, RX, RY | _],[]):- T>=13, T < 16, nb_setval(robotsPos,[[BX, BY],[GX, GY],[YX, YY]]).
 
-%move( [TL, TR, BL, BR, _, BX, BY | _],[]) :- deplacement(BX, BY, 1, NX, NY, TL, TR, BL, BR, N),   writef('Coordonnees du robot: [%t , %t] / Obstacle : [%t, %t] / Deplacement de %t case(s) \n', [BX, BY, NX, NY, N]), !.
-% move( [TL, TR, BL, BR | _],[]) :- writef('TL:%t TR:%t BL:%t BR:%t \n',[TL, TR, BL, BR]), !.
-
-
-% Element(IdElement,X,Y,TL,TR,BL,BR).
-	move( [TL, TR, BL, BR, 0, BX, BY | _],Path) :- deplacement(BX, BY, 1, NX, NY, TL, TR, BL, BR, N),element(0, X, Y, TL, TR, BL, BR),
+	move( [TL, TR, BL, BR, 0, BX, BY, GX, GY, YX, YY, RX, RY],Path) :-element(0, X, Y, TL, TR, BL, BR),
 init(_), obstacle(OX,OY,TL,TR,BL,BR,_),nb_setval(le_Chemin,[OX,OY]),testRobot([BX,BY],[GX,GY],[YX,YY],[RX,RY],[X,Y]),selectPath(Path).
 	move( [TL, TR, BL, BR, IdElement, BX, BY | _],Path) :- IdElement>=1, IdElement < 5, init(_), element(IdElement, X, Y, TL, TR, BL, BR),nb_setval(color,0), obstacle(OX,OY,TL,TR,BL,BR,_),
 nb_setval(le_Chemin,[OX,OY]),selectRobot([BX,BY],[GX,GY],[YX,YY],[RX,RY],[RobotX, RobotY]),distance([RobotX, RobotY],[X, Y],C),a_star([[RobotX, RobotY],0,C,-1],[[X, Y],_,0,_],Path).
 
-
-	move( [TL, TR, BL, BR, 0, _, _, GX, GY | _],Path) :- deplacement(GX, GY, 1, NX, NY, TL, TR, BL, BR, N), element(0, X, Y, TL, TR, BL, BR),
-init(_), obstacle(OX,OY,TL,TR,BL,BR,_), nb_setval(le_Chemin,[OX,OY]),testRobot([BX,BY],[GX,GY],[YX,YY],[RX,RY],[X,Y]),selectPath(Path).
 	move( [TL, TR, BL, BR, IdElement, BX, BY | _],Path) :- IdElement>=5, IdElement < 9, init(_), element(IdElement, X, Y, TL, TR, BL, BR),nb_setval(color,1), obstacle(OX,OY,TL,TR,BL,BR,_),
 nb_setval(le_Chemin,[OX,OY]),selectRobot([BX,BY],[GX,GY],[YX,YY],[RX,RY],[RobotX, RobotY]),distance([RobotX, RobotY],[X, Y],C),a_star([[RobotX, RobotY],0,C,-1],[[X, Y],_,0,_],Path).
 
-
-	move( [TL, TR, BL, BR, 0, _, _, YX, YY | _],Path) :- deplacement(YX, YY, 1, NX, NY, TL, TR, BL, BR, N), element(0, X, Y, TL, TR, BL, BR),
-init(_), obstacle(OX,OY,TL,TR,BL,BR,_), nb_setval(le_Chemin,[OX,OY]),testRobot([BX,BY],[GX,GY],[YX,YY],[RX,RY],[X,Y]),selectPath(Path).
 	move( [TL, TR, BL, BR, IdElement, BX, BY | _],Path) :- IdElement>=9, IdElement < 13, init(_), element(IdElement, X, Y, TL, TR, BL, BR),nb_setval(color,2), obstacle(OX,OY,TL,TR,BL,BR,_),
 nb_setval(le_Chemin,[OX,OY]),selectRobot([BX,BY],[GX,GY],[YX,YY],[RX,RY],[RobotX, RobotY]),distance([RobotX, RobotY],[X, Y],C),a_star([[RobotX, RobotY],0,C,-1],[[X, Y],_,0,_],Path).
 
-	move( [TL, TR, BL, BR, 0, _, _, _, _, _, _, RX, RY],Path) :- deplacement(RX, RY, 1, NX, NY, TL, TR, BL, BR, N),element(0, X, Y, TL, TR, BL, BR),
-init(_), obstacle(OX,OY,TL,TR,BL,BR,_), nb_setval(le_Chemin,[OX,OY]),testRobot([BX,BY],[GX,GY],[YX,YY],[RX,RY],[X,Y]),selectPath(Path).
 	move( [TL, TR, BL, BR, IdElement, BX, BY | _],Path) :- IdElement>=13, IdElement < 16, init(_), element(IdElement, X, Y, TL, TR, BL, BR),nb_setval(color,3), obstacle(OX,OY,TL,TR,BL,BR,_),
 nb_setval(le_Chemin,[OX,OY]),selectRobot([BX,BY],[GX,GY],[YX,YY],[RX,RY],[RobotX, RobotY]),distance([RobotX, RobotY],[X, Y],C),a_star([[RobotX, RobotY],0,C,-1],[[X, Y],_,0,_],Path).
+
+%move( [_, _, _, _, T, BX, BY, GX, GY, YX, YY, RX, RY | _],[]):- T>=1, T < 5,  nb_setval(robotsPos,[ [GX, GY],[YX, YY],[RX, RY]]).
+%move( [_, _, _, _, T, BX, BY, GX, GY, YX, YY, RX, RY | _],[]):- T>=5, T < 9, nb_setval(robotsPos,[[BX, BY],[YX, YY],[RX, RY]]).
+%move( [_, _, _, _, T, BX, BY, GX, GY, YX, YY, RX, RY | _],[]):- T>=9, T < 13, nb_setval(robotsPos,[[BX, BY],[GX, GY],[RX, RY]]).
+%move( [_, _, _, _, T, BX, BY, GX, GY, YX, YY, RX, RY | _],[]):- T>=13, T < 16, nb_setval(robotsPos,[[BX, BY],[GX, GY],[YX, YY]]).
+
+%move( [TL, TR, BL, BR, _, BX, BY | _],[]) :- deplacement(BX, BY, 1, NX, NY, TL, TR, BL, BR, N),   writef('Coordonnees du robot: [%t , %t] / Obstacle : [%t, %t] / Deplacement de %t case(s) \n', [BX, BY, NX, NY, N]), !.
+% move( [TL, TR, BL, BR | _],[]) :- writef('TL:%t TR:%t BL:%t BR:%t \n',[TL, TR, BL, BR]), !.
 
 selectRobot([BX,BY],[GX,GY],[YX,YY],[RX,RY],[BX,BY]):- nb_getval(color,0),!,nb_setval(r1,[GX,GY]),nb_setval(r2,[YX,YY]),nb_setval(r3,[RX,RY]).
 selectRobot([BX,BY],[GX,GY],[YX,YY],[RX,RY],[GX,GY]):- nb_getval(color,1),!,nb_setval(r1,[BX,BY]),nb_setval(r2,[YX,YY]),nb_setval(r3,[RX,RY]).
